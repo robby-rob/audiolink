@@ -75,7 +75,7 @@ class AudiolinkFile:
 
 
     def create_link(self, dest, overwrite=False) -> None:
-        """ Creates a hard link in the dest path with the AudioLink Id as file name.
+        """ Creates a hard link in dest path with Audiolink Id as file name.
         """
         link_fp = Path(dest).joinpath(self.link_name)
 
@@ -87,7 +87,7 @@ class AudiolinkFile:
 
 
     def delete_id(self) -> None:
-        """ Removes the Audiolink Id field from the file tag.
+        """ Removes Audiolink Id tag from file.
         """
         for style in mediafield.styles(self.tag.mgfile):
             style.delete(self.tag.mgfile)
