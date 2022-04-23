@@ -59,9 +59,8 @@ class AudiolinkFile:
         """ Tests if val is a proper Audiolink Id.
         """
         # 'UUID Hex' + '_al' suffix to distinguish from other ids
-        id_parts = val.split('_')
-
         try:
+            id_parts = val.split('_')
             uuid.UUID(id_parts[0])
             return id_parts[1] == 'al'
     
