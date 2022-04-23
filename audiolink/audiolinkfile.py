@@ -46,12 +46,12 @@ class AudiolinkFile:
     """
     def __init__(self, fp) -> None:
         self.path = Path(fp)
-        self.tag = _MediaFile(self.path)
+        self.__tag = _MediaFile(self.path)
 
 
     @property
     def id(self) -> str:
-        return self.tag.audiolink_id
+        return self.__tag.audiolink_id
 
 
     @staticmethod
@@ -88,10 +88,10 @@ class AudiolinkFile:
     def delete_id(self) -> None:
         """ Removes Audiolink Id tag from file.
         """
-        for style in mediafield.styles(self.tag.mgfile):
-            style.delete(self.tag.mgfile)
+        for style in mediafield.styles(self.__tag.mgfile):
+            style.delete(self.__tag.mgfile)
         
-        self.tag.save()
+        self.__tag.save()
 
 
     def set_id(self, val, overwrite=False) -> None:
@@ -104,8 +104,8 @@ class AudiolinkFile:
         if not AudiolinkFile.id_is_valid(val):
             raise ValueError(f'"{val}" is not a valid Audiolink Id.')
 
-        self.tag.audiolink_id = val
-        self.tag.save()
+        self.__tag.audiolink_id = val
+        self.__tag.save()
 
 
     def set_id_from_link_name(self, overwrite=False) -> None:
