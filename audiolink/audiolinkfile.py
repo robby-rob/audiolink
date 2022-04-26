@@ -22,6 +22,24 @@ mediafield = MediaField(
     ASFStorageStyle('Audiolink/Id'),
 )
 
+def generate_id() -> str:
+    """ Generates a new Audiolink Id.
+        UUID hex + -al suffix to distinguish from other ids
+    """ 
+    id = uuid.uuid4().hex
+    return f'{id}-al'
+
+def id_is_valid(val) -> bool:
+    """ Tests if val is a proper Audiolink Id.
+    """
+    try:
+        id_parts = val.split('-')
+        uuid.UUID(id_parts[0])
+        return id_parts[1] == 'al'
+
+    except:
+        return False
+
 
 class _MediaFile(MediaFile):
     """ Class for adding Audiolink Id field. Avoids conflicts with other instances of MediaFile
@@ -52,20 +70,6 @@ class AudiolinkFile:
     @property
     def id(self) -> str:
         return self.__tag.audiolink_id
-
-
-    @staticmethod
-    def id_is_valid(val) -> bool:
-        """ Tests if val is a proper Audiolink Id.
-        """
-        # 'UUID Hex' + '_al' suffix to distinguish from other ids
-        try:
-            id_parts = val.split('_')
-            uuid.UUID(id_parts[0])
-            return id_parts[1] == 'al'
-    
-        except:
-            return False
 
 
     @property
@@ -101,7 +105,7 @@ class AudiolinkFile:
             if self.id is not None:
                 raise AudiolinkIdExistsError(self.id, self.path)
 
-        if not AudiolinkFile.id_is_valid(val):
+        if not id_is_valid(val):
             raise ValueError(f'"{val}" is not a valid Audiolink Id.')
 
         self.__tag.audiolink_id = val
@@ -117,6 +121,6 @@ class AudiolinkFile:
     def set_new_id(self, overwrite=False) -> None:
         """ Sets Audiolink Id tag using newly generated id.
         """
-        id = f'{uuid.uuid4().hex}_al'
+        id = generate_id()
         self.set_id(id, overwrite=overwrite)
         
