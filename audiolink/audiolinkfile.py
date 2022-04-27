@@ -32,6 +32,9 @@ def generate_id() -> str:
 def id_is_valid(val) -> bool:
     """ Tests if val is a proper Audiolink Id.
     """
+    if val is None:
+        return None
+
     try:
         id_parts = val.split('-')
         uuid.UUID(id_parts[0])
@@ -39,6 +42,14 @@ def id_is_valid(val) -> bool:
 
     except:
         return False
+
+
+def link_is_valid(src, dest) -> bool:
+    #TODO: Test that src and des are on same fs
+
+    src_ino = Path(src).stat().st_ino
+    dest_ino = Path(dest).stat().st_ino
+    return src_ino == dest_ino
 
 
 class _MediaFile(MediaFile):
