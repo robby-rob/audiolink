@@ -10,6 +10,7 @@ from pathlib import Path
 import uuid
 import os
 
+__version__ = '0.1.0'
 
 __all__ = [
     'AudiolinkFile',
@@ -25,12 +26,14 @@ mediafield = MediaField(
     ASFStorageStyle('Audiolink/Id'),
 )
 
+
 def generate_id() -> str:
     """ Generates a new Audiolink Id.
-        UUID hex + -al suffix to distinguish from other ids
+        UUID_hex + -al suffix to distinguish from other ids
     """ 
     id = uuid.uuid4().hex
     return f'{id}-al'
+
 
 def id_is_valid(val) -> bool:
     """ Tests if val is a proper Audiolink Id.
@@ -48,8 +51,6 @@ def id_is_valid(val) -> bool:
 
 
 def link_is_valid(src, dest) -> bool:
-    #TODO: Test that src and des are on same fs
-
     src_ino = Path(src).stat().st_ino
     dest_ino = Path(dest).stat().st_ino
     return src_ino == dest_ino
