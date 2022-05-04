@@ -35,16 +35,15 @@ def generate_id() -> str:
     return f'{id}-al'
 
 
-def id_is_valid(val) -> bool:
+def id_is_valid(val:str) -> bool:
     """ Tests if val is a proper Audiolink Id.
     """
     if val is None:
         return None
 
     try:
-        id_parts = val.split('-')
-        uuid.UUID(id_parts[0])
-        return id_parts[1] == 'al'
+        uuid.UUID(val[:-3])
+        return val[-3:] == '-al'
 
     except:
         return False
@@ -89,7 +88,8 @@ class AudiolinkFile:
 
     @property
     def link_name(self) -> Path:
-        return Path(self.id).with_suffix(self.path.suffix)
+        if self.id:
+            return Path(self.id).with_suffix(self.path.suffix)
 
 
     def create_link(self, dest, overwrite=False) -> None:
