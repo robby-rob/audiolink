@@ -113,6 +113,19 @@ class AudiolinkFile:
         self.__tag.save()
 
 
+    def delete_link(self, dest) -> None:
+        """ Removes hard link in dest path if exists with file Audiolink Id.
+            If a file path is given, the file will be checked, if a dir is given, the filename will be the Audiolink Id
+        """
+        link_fp = Path(dest)
+        
+        if link_fp.is_dir():
+            link_fp = link_fp.joinpath(self.link_name)
+
+        if link_fp.exists() and link_is_valid(self.path, link_fp):
+            link_fp.unlink()
+
+
     def set_id(self, val, overwrite=False) -> None:
         """ Sets Audiolink Id tag with a given value.
         """
