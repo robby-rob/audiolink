@@ -87,9 +87,9 @@ class AudiolinkFile:
 
 
     @property
-    def link_name(self) -> Path:
+    def link_name(self) -> str:
         if self.id:
-            return Path(self.id).with_suffix(self.path.suffix)
+            return str(Path(self.id).with_suffix(self.path.suffix))
 
 
     def create_link(self, dest, overwrite=False) -> None:
