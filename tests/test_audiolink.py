@@ -9,8 +9,19 @@ import uuid
 # Config
 version = '0.1.0'
 file_types = [
+    '.aiff',
+#    '.alac.m4a',
+    '.ape',
+    '.dsf',
     '.flac',
+    '.m4a',
     '.mp3',
+    '.mpc',
+    '.ogg',
+    '.opus',
+    '.wav',
+    '.wma',
+    '.wv',
 ]
 
 
