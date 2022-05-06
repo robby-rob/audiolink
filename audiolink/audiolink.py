@@ -17,7 +17,7 @@ __all__ = [
     'AudiolinkFolder'
 ]
 
-file_types = tuple(
+file_types = [
     '.aiff',
     '.ape',
     '.dsf',
@@ -30,7 +30,7 @@ file_types = tuple(
     '.wav',
     '.wma',
     '.wv',
-)
+]
 
 al_id_suffix = '-al'
 
