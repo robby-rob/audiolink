@@ -8,6 +8,7 @@ import uuid
 
 # Config
 version = '0.1.0'
+
 file_types = [
     '.aiff',
     '.alac.m4a',
@@ -82,7 +83,7 @@ def media_file_full(media_file):
 def test_version():
     assert al.__version__ == version
 
-
+'''
 def test_generate_id():
     id = al.generate_id()
     id_hex, id_suffix = id_parts(id)
@@ -101,7 +102,7 @@ def test_generate_id():
 )
 def test_id_is_valid(val:str, expected:bool):
     assert al.id_is_valid(val) is expected
-
+'''
 
 def test_link_is_valid(tmp_path:Path):
     src_fp = tmp_path / 'src_file'
@@ -118,6 +119,42 @@ def test_link_is_valid(tmp_path:Path):
     assert al.link_is_valid(src_fp, dest_fp) is True
     assert al.link_is_valid(not_src_fp, dest_fp) is False
     assert al.link_is_valid(src_fp, not_dest_fp) is False    
+
+
+# AudiolinkId
+def test_AudiolinkId_init_valid():
+    id = al.AudiolinkId(known_id['valid'])
+    assert id.suffix == al_id_suffix
+    assert id.__str__() == known_id['valid']
+    assert id.__repr__() == known_id['valid']
+    assert id.uuid.hex + al_id_suffix == known_id['valid']
+
+
+@pytest.mark.parametrize('val',
+    [
+        known_id['invalid_hex'],
+        known_id['invalid_suffix']
+    ]
+)
+def test_AudiolinkId_init_invalid(val:str):
+    try:
+        al.AudiolinkId(val)
+
+    except ValueError:
+        assert True
+        return
+    
+    raise AssertionError
+
+
+def test_AudiolinkId_new():
+    id_1 = al.AudiolinkId.new()
+    id_2 = al.AudiolinkId.new()
+    id_hex, id_suffix = id_parts(str(id_1))
+    assert id_hex == uuid_hex(id_hex)
+    assert id_suffix == al_id_suffix
+    assert id_1 != id_2
+    assert str(id_1) != str(id_2)
 
 
 # AudiolinkFile
