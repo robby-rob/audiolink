@@ -108,7 +108,7 @@ class AudiolinkFile:
             return str(Path(self.id).with_suffix(self.path.suffix))
 
 
-    def create_link(self, dest, overwrite=False) -> None:
+    def create_link(self, dest:str, overwrite=False) -> None:
         """ Creates a hard link in dest path with Audiolink Id as file name.
         """
         link_fp = Path(dest).joinpath(self.link_name)
@@ -129,7 +129,7 @@ class AudiolinkFile:
         self.__tag.save()
 
 
-    def delete_link(self, dest) -> None:
+    def delete_link(self, dest:str) -> None:
         """ Removes hard link in dest path if exists with file Audiolink Id.
             If a file path is given, the file will be checked, if a dir is given, the filename will be the Audiolink Id
         """
@@ -142,7 +142,7 @@ class AudiolinkFile:
             link_fp.unlink()
 
 
-    def set_id(self, val, overwrite=False) -> None:
+    def set_id(self, val:str, overwrite=False) -> None:
         """ Sets Audiolink Id tag with a given value.
         """
         if not overwrite:
