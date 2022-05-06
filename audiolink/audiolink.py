@@ -1,4 +1,3 @@
-from typing import Iterable
 from mediafile import MediaFile
 from mediafile import MediaField
 from mediafile import MP3DescStorageStyle
@@ -41,29 +40,6 @@ mediafield = MediaField(
     ASFStorageStyle('Audiolink/Id'),
 )
 
-'''
-def generate_id() -> str:
-    """ Generates a new Audiolink Id.
-        UUID_hex + -al suffix to distinguish from other ids
-    """ 
-    id = uuid.uuid4().hex
-    return id + al_id_suffix
-
-
-def id_is_valid(val:str) -> bool:
-    """ Tests if val is a proper Audiolink Id.
-    """
-    if val is None:
-        return None
-
-    try:
-        n = len(al_id_suffix)
-        uuid.UUID(val[:-n])
-        return val[-n:] == al_id_suffix
-
-    except:
-        return False
-'''
 
 def link_is_valid(src, dest) -> bool:
     src_ino = Path(src).stat().st_ino
