@@ -12,13 +12,13 @@ import os
 __version__ = '0.1.0'
 
 __all__ = [
+    'AudiolinkId',
     'AudiolinkFile',
     'AudiolinkFolder'
 ]
 
-file_types = [
+file_types = tuple(
     '.aiff',
-#    '.alac.m4a',
     '.ape',
     '.dsf',
     '.flac',
@@ -30,7 +30,7 @@ file_types = [
     '.wav',
     '.wma',
     '.wv',
-]
+)
 
 al_id_suffix = '-al'
 
@@ -41,7 +41,7 @@ mediafield = MediaField(
     ASFStorageStyle('Audiolink/Id'),
 )
 
-
+'''
 def generate_id() -> str:
     """ Generates a new Audiolink Id.
         UUID_hex + -al suffix to distinguish from other ids
@@ -63,7 +63,7 @@ def id_is_valid(val:str) -> bool:
 
     except:
         return False
-
+'''
 
 def link_is_valid(src, dest) -> bool:
     src_ino = Path(src).stat().st_ino
@@ -96,17 +96,22 @@ class AudiolinkId:
 
     def __init__(self, val:str) -> None:
         n = len(AudiolinkId.suffix)
+        val = str(val)
         if val[-n:] != AudiolinkId.suffix:
             raise ValueError(f'must end with "{AudiolinkId.suffix}"')
         
         self.uuid = uuid.UUID(val[:-n])
     
-    @property
-    def id(self) -> str:
+    def __str__(self) -> str:
+        return self.uuid.hex + AudiolinkId.suffix
+
+    def __repr__(self) -> str:
         return self.uuid.hex + AudiolinkId.suffix
 
     @classmethod
     def new(cls):
+        """ Creates instance with newly generated id
+        """
         return AudiolinkId(uuid.uuid4().hex + cls.suffix)
 
 
@@ -164,32 +169,31 @@ class AudiolinkFile:
 
 
     def set_id(self, val:str, overwrite=False) -> None:
-        """ Sets Audiolink Id tag with a given value.
+        """ Sets Audiolink Id tag with value.
         """
         if not overwrite:
             if self.id is not None:
                 raise AudiolinkIdExistsError(self.id, self.path)
 
-        if not id_is_valid(val):
-            raise ValueError(f'"{val}" is not a valid Audiolink Id.')
+        if type(val) != AudiolinkId:
+            val = AudiolinkId(val)
 
-        self.__tag.audiolink_id = val
+        self.__tag.audiolink_id = str(val)
         self.__tag.save()
 
 
     def set_id_from_link_name(self, overwrite=False) -> None:
-        """ Sets Audiolink Id tag using file name.
+        """ Sets Audiolink Id tag from file name.
         """
         self.set_id(self.path.stem, overwrite=overwrite)
 
 
     def set_new_id(self, overwrite=False) -> None:
-        """ Sets Audiolink Id tag using newly generated id.
+        """ Sets Audiolink Id tag with newly generated id.
         """
-        id = generate_id()
-        self.set_id(id, overwrite=overwrite)
+        self.set_id(AudiolinkId.new(), overwrite=overwrite)
 
-
+'''
 class AudiolinkFolder:
     def __init__(self, path, link_path=None):
         self.path = Path(path) #.resolve()
@@ -318,3 +322,4 @@ class AudiolinkFolder:
                 print(e)
 
         self.scan_folder()
+'''
