@@ -10,7 +10,7 @@ import uuid
 version = '0.1.0'
 file_types = [
     '.aiff',
-#    '.alac.m4a',
+    '.alac.m4a',
     '.ape',
     '.dsf',
     '.flac',
@@ -44,8 +44,7 @@ def id_parts(val:str) -> str:
 
 def uuid_hex(val:str) -> str:
     try:
-        uuid.UUID(val).hex
-        return val
+        return uuid.UUID(val).hex
     except ValueError:
         return None
 
