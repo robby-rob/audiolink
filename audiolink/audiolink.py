@@ -89,8 +89,29 @@ class AudiolinkIdExistsError(Exception):
         Exception.__init__(self, id, file)
 
 
+class AudiolinkId:
+    """ Class for Audiolink Id.
+    """
+    suffix = '-al'
+
+    def __init__(self, val:str) -> None:
+        n = len(AudiolinkId.suffix)
+        if val[-n:] != AudiolinkId.suffix:
+            raise ValueError(f'must end with "{AudiolinkId.suffix}"')
+        
+        self.uuid = uuid.UUID(val[:-n])
+    
+    @property
+    def id(self) -> str:
+        return self.uuid.hex + AudiolinkId.suffix
+
+    @classmethod
+    def new(cls):
+        return AudiolinkId(uuid.uuid4().hex + cls.suffix)
+
+
 class AudiolinkFile:
-    """ Class for Audiolink Id operations on media files.
+    """ Class for Audiolink operations on media files.
     """
     def __init__(self, fp) -> None:
         self.path = Path(fp)
