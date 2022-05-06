@@ -5,7 +5,6 @@ from mediafile import MP3DescStorageStyle
 from mediafile import MP4StorageStyle
 from mediafile import StorageStyle
 from mediafile import ASFStorageStyle
-from mediafile import TYPES
 from pathlib import Path
 import uuid
 import os
@@ -17,7 +16,23 @@ __all__ = [
     'AudiolinkFolder'
 ]
 
-_extensions = tuple(f'.{k}' for k in TYPES.keys())
+file_types = [
+    '.aiff',
+#    '.alac.m4a',
+    '.ape',
+    '.dsf',
+    '.flac',
+    '.m4a',
+    '.mp3',
+    '.mpc',
+    '.ogg',
+    '.opus',
+    '.wav',
+    '.wma',
+    '.wv',
+]
+
+al_id_suffix = '-al'
 
 mediafield = MediaField(
     MP3DescStorageStyle(u'AUDIOLINK_ID'),
@@ -32,7 +47,7 @@ def generate_id() -> str:
         UUID_hex + -al suffix to distinguish from other ids
     """ 
     id = uuid.uuid4().hex
-    return f'{id}-al'
+    return id + al_id_suffix
 
 
 def id_is_valid(val:str) -> bool:
@@ -42,8 +57,9 @@ def id_is_valid(val:str) -> bool:
         return None
 
     try:
-        uuid.UUID(val[:-3])
-        return val[-3:] == '-al'
+        n = len(al_id_suffix)
+        uuid.UUID(val[:-n])
+        return val[-n:] == al_id_suffix
 
     except:
         return False
@@ -181,7 +197,7 @@ class AudiolinkFolder:
 
 
         pattern = '**/*' if recursive else '*'
-        self.path_stats = [analyze(fp) for fp in Path.glob(self.path, pattern) if fp.suffix in _extensions]
+        self.path_stats = [analyze(fp) for fp in Path.glob(self.path, pattern) if fp.suffix in file_types]
 
 
     def _query_gen(self, state=None) -> Iterable:
