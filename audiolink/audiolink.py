@@ -118,7 +118,7 @@ class AudiolinkFile:
         elif AudiolinkFile(fp).id == self.id:
             return 'inactive'
 
-        raise Exception
+        return 'conflict'
 
 
     def create_link(self, dest:str, overwrite:bool = False) -> None:
@@ -126,10 +126,20 @@ class AudiolinkFile:
         """
         dir = Path(dest)
         fp = dir.joinpath(self.link_name)
+        link_status = self.get_link_status(dir)
 
-        if not overwrite:
-            if fp.exists():
-                raise FileExistsError('Link already exists in dest.')
+        if link_status is None:
+            pass
+
+        elif link_status == 'active':
+            return
+        
+        elif link_status == 'inactive':
+            if not overwrite:
+                raise FileExistsError('file exists in dest with link name and id')
+
+        else:
+            raise FileExistsError('file exists in dest with link name')
 
         os.link(self.path, fp)
 
@@ -149,7 +159,7 @@ class AudiolinkFile:
         """
         dir = Path(dest)
         if not dir.is_dir():
-            raise ValueError
+            raise ValueError('dest must be a dir')
 
         fp = Path(dest).joinpath(self.link_name)
 
