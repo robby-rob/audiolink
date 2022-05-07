@@ -110,6 +110,23 @@ class AudiolinkFile:
             return str(Path(self.id).with_suffix(self.path.suffix))
 
 
+    def get_link_status(self, dir) -> str:
+        """ Checks the dir for a link file and returns the status.
+        """
+        fp = Path(dir) / self.link_name
+        
+        if not fp.exists():
+            return None
+
+        if fp.stat().st_ino == self.path.stat().st_ino:
+            return 'active'
+        
+        elif AudiolinkFile(fp).id == self.id:
+            return 'inactive'
+
+        raise Exception
+
+
     def create_link(self, dest:str, overwrite=False) -> None:
         """ Creates a hard link in dest path with Audiolink Id as file name.
         """
@@ -140,7 +157,7 @@ class AudiolinkFile:
         if link_fp.is_dir():
             link_fp = link_fp.joinpath(self.link_name)
 
-        if link_fp.exists() and link_is_valid(self.path, link_fp):
+        if link_fp.exists() and self.get_link_status(link_fp) == 'active':
             link_fp.unlink()
 
 
@@ -156,12 +173,6 @@ class AudiolinkFile:
 
         self.__tag.audiolink_id = str(val)
         self.__tag.save()
-
-
-    def set_id_from_link_name(self, overwrite=False) -> None:
-        """ Sets Audiolink Id tag from file name.
-        """
-        self.set_id(self.path.stem, overwrite=overwrite)
 
 
     def set_new_id(self, overwrite=False) -> None:
