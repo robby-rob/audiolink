@@ -83,6 +83,67 @@ def media_file_full(media_file):
 def test_version():
     assert al.__version__ == version
 
+
+# AudiolinkId
+@pytest.mark.parametrize(
+    'val, expected',
+    [
+        (None, True),
+        (known_id['valid'], True),
+        (known_id['invalid_hex'], False),
+        (known_id['invalid_suffix'], False),
+    ]
+)
+def test_AudiolinkId_init(val:str, expected:bool):
+    try:
+        al.AudiolinkId(val)
+        outcome = True
+    except ValueError:
+        outcome = False
+    
+    assert outcome is expected
+
+
+@pytest.mark.parametrize(
+    'val, expected',
+    [
+        (None, True),
+        (known_id['valid'], True),
+        (known_id['invalid_hex'], False),
+        (known_id['invalid_suffix'], False),
+    ]
+)
+def test_AudiolinkId_val_setter(val:str, expected:bool):
+    try:
+        sample = al.AudiolinkId()
+        sample.val = val
+        outcome = True
+    except ValueError:
+        outcome = False
+    
+    assert outcome is expected
+
+
+@pytest.mark.parametrize(
+    'val',
+    [
+        None,
+        known_id['valid'],
+    ]
+)
+def test_AudiolinkId_val_getter(val:str):
+    sample = al.AudiolinkId()
+    
+    try:
+        sample.val
+    
+    except AttributeError:
+        assert True
+        return
+
+    assert sample.val == val
+
+
 '''
 def test_generate_id():
     id = al.generate_id()
@@ -120,7 +181,7 @@ def test_link_is_valid(tmp_path:Path):
     assert al.link_is_valid(not_src_fp, dest_fp) is False
     assert al.link_is_valid(src_fp, not_dest_fp) is False    
 '''
-
+'''
 # AudiolinkId
 def test_AudiolinkId_init_valid():
     id = al.AudiolinkId(known_id['valid'])
@@ -245,3 +306,4 @@ def test_audiolinkFile_delete_link(media_file_full, file_type:str, tmp_path:Path
     assert dest_fp.exists() is True
     file.delete_link(tmp_path)
     assert dest_fp.exists() is False
+'''
