@@ -88,7 +88,7 @@ class AudiolinkId:
 class AudiolinkFile:
     """ Class for Audiolink operations on media files.
     """
-    def __init__(self, fp) -> None:
+    def __init__(self, fp:str) -> None:
         self.path = Path(fp)
         self.__tag = _MediaFile(self.path)
 
@@ -107,7 +107,7 @@ class AudiolinkFile:
     def get_link_status(self, dir) -> str:
         """ Checks the dir for a link file and returns the status.
         """
-        fp = Path(dir) / self.link_name
+        fp = Path(dir).joinpath(self.link_name)
         
         if not fp.exists():
             return None
@@ -121,16 +121,17 @@ class AudiolinkFile:
         raise Exception
 
 
-    def create_link(self, dest:str, overwrite=False) -> None:
+    def create_link(self, dest:str, overwrite:bool = False) -> None:
         """ Creates a hard link in dest path with Audiolink Id as file name.
         """
-        link_fp = Path(dest).joinpath(self.link_name)
+        dir = Path(dest)
+        fp = dir.joinpath(self.link_name)
 
         if not overwrite:
-            if link_fp.exists():
+            if fp.exists():
                 raise FileExistsError('Link already exists in dest.')
 
-        os.link(self.path, link_fp)
+        os.link(self.path, fp)
 
 
     def delete_id(self) -> None:
@@ -146,13 +147,14 @@ class AudiolinkFile:
         """ Removes hard link in dest path if exists with file Audiolink Id.
             If a file path is given, the file will be checked, if a dir is given, the filename will be the Audiolink Id
         """
-        link_fp = Path(dest)
-        
-        if link_fp.is_dir():
-            link_fp = link_fp.joinpath(self.link_name)
+        dir = Path(dest)
+        if not dir.is_dir():
+            raise ValueError
 
-        if link_fp.exists() and self.get_link_status(link_fp) == 'active':
-            link_fp.unlink()
+        fp = Path(dest).joinpath(self.link_name)
+
+        if fp.exists() and self.get_link_status(dir) == 'active':
+            fp.unlink()
 
 
     def set_id(self, val:str, overwrite=False) -> None:

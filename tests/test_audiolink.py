@@ -232,7 +232,7 @@ def test_audiolinkFile_create_link(media_file_full, file_type:str, tmp_path:Path
     file.create_link(tmp_path)
     assert dest_fp.exists() is True
     assert dest_fp.name == file.id + file.path.suffix
-    assert al.link_is_valid(file.path, dest_fp) is True
+    assert file.get_link_status(tmp_path) == 'active'
     #TODO: test that they share the same ino
 
 
