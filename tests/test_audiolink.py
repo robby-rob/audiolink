@@ -102,7 +102,7 @@ def test_generate_id():
 )
 def test_id_is_valid(val:str, expected:bool):
     assert al.id_is_valid(val) is expected
-'''
+
 
 def test_link_is_valid(tmp_path:Path):
     src_fp = tmp_path / 'src_file'
@@ -119,7 +119,7 @@ def test_link_is_valid(tmp_path:Path):
     assert al.link_is_valid(src_fp, dest_fp) is True
     assert al.link_is_valid(not_src_fp, dest_fp) is False
     assert al.link_is_valid(src_fp, not_dest_fp) is False    
-
+'''
 
 # AudiolinkId
 def test_AudiolinkId_init_valid():

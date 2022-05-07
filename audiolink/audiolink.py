@@ -41,12 +41,6 @@ mediafield = MediaField(
 )
 
 
-def link_is_valid(src, dest) -> bool:
-    src_ino = Path(src).stat().st_ino
-    dest_ino = Path(dest).stat().st_ino
-    return src_ino == dest_ino
-
-
 class _MediaFile(MediaFile):
     """ Class for adding Audiolink Id field. Avoids conflicts with other instances of MediaFile
     """
