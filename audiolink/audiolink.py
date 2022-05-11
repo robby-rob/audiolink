@@ -62,21 +62,50 @@ class AudiolinkIdExistsError(Exception):
 class AudiolinkId:
     """ Class for Audiolink Id.
     """
-    suffix = '-al'
+    _suffix = '-al'
 
-    def __init__(self, val:str) -> None:
-        n = len(AudiolinkId.suffix)
-        val = str(val)
-        if val[-n:] != AudiolinkId.suffix:
-            raise ValueError(f'must end with "{AudiolinkId.suffix}"')
-        
-        self.uuid = uuid.UUID(val[:-n])
-    
+    def __init__(self, val=None) -> None:
+        self.val = val
+
+    '''
     def __str__(self) -> str:
-        return self.uuid.hex + AudiolinkId.suffix
+        return self.val
 
     def __repr__(self) -> str:
-        return self.uuid.hex + AudiolinkId.suffix
+        return self.val
+    '''
+
+    @property
+    def val(self) -> str:
+        if self._uuid is None:
+            return None
+        
+        return f'{self._uuid.hex}{AudiolinkId.suffix}' 
+
+    @val.setter
+    def val(self, id:str) -> None:
+        if id is None:
+            self._uuid = None
+            return
+
+        id = str(id)
+        suffix = AudiolinkId.suffix
+        n = len(suffix)
+
+        if id[-n:] != suffix:
+            raise ValueError(f'must end with "{suffix}"')
+
+        self._uuid = uuid.UUID(id[:-n])
+
+    '''
+    def set_new(self) -> None:
+        self._uuid = uuid.uuid4().hex
+    '''
+
+    @classmethod
+    @property
+    def suffix(cls):
+        return cls._suffix
 
     @classmethod
     def new(cls):
@@ -84,107 +113,142 @@ class AudiolinkId:
         """
         return AudiolinkId(uuid.uuid4().hex + cls.suffix)
 
-
 class AudiolinkFile:
     """ Class for Audiolink operations on media files.
+        fp can be changed by using cls.fp = fp
     """
     def __init__(self, fp:str) -> None:
-        self.path = Path(fp)
-        self.__tag = _MediaFile(self.path)
+        self.path = fp
 
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    @path.setter
+    def path(self, fp:str) -> None:
+        self._path = Path(fp)
+        self._tag = _MediaFile(self.path)
 
     @property
     def id(self) -> str:
-        return self.__tag.audiolink_id
+        return self._tag.audiolink_id
 
+    @id.setter
+    def id(self, audiolinkid) -> None:
+        '''
+        if not issubclass(id, AudiolinkId):
+            raise ValueError('id is not of class AudiolinkId')
+        '''
+        try:
+            id = audiolinkid.val
+
+        except AttributeError:
+            raise ValueError('id is not of class AudiolinkId')
+        
+        if id is None:
+            raise ValueError('AudiolinkId has no value')
+
+        self._tag.audiolink_id = str(id)
+        self._tag.save()
+
+    def delete_audiolink_id_tag(self) -> None:
+        """ Removes Audiolink Id tag from file.
+        """
+        for style in mediafield.styles(self._tag.mgfile):
+            style.delete(self._tag.mgfile)
+
+        self._tag.save()
+
+
+class AudiolinkFileLink:
+    """ Class for Audiolink operations on media files.
+    """
+    def __init__(self, file:AudiolinkFile, dest:str) -> None:
+        self.file = file
+        self.dest = dest
 
     @property
+    def file(self) -> AudiolinkFile:
+        return self._file
+
+    @file.setter
+    def file(self, file) -> None:
+        if not isinstance(file, AudiolinkFile):
+            raise ValueError('file is not of class AudiolinkFile')
+
+        self._file = file
+
+    @property
+    def dest(self) -> Path:
+        return self._dest
+
+    @dest.setter
+    def dest(self, dest:str) -> None:
+        link_dir = Path(dest)
+
+        if not link_dir.is_dir():
+            raise ValueError('dest is not a dir')
+
+        self._dest = link_dir
+        
+    @property
     def link_name(self) -> str:
-        if self.id:
-            return str(Path(self.id).with_suffix(self.path.suffix))
+        return f'{self.file.id}{self.file.path.suffix}'
 
+    @property
+    def link_path(self) -> Path:
+        return self.dest.joinpath(self.link_name)
 
-    def get_link_status(self, dir) -> str:
+    @property
+    def link_status(self) -> str:
         """ Checks the dir for a link file and returns the status.
         """
-        fp = Path(dir).joinpath(self.link_name)
-        
-        if not fp.exists():
+        if not self.link_path.exists():
             return None
 
-        if fp.stat().st_ino == self.path.stat().st_ino:
+        if self.link_path.stat().st_ino == self.file.path.stat().st_ino:
             return 'active'
         
-        elif AudiolinkFile(fp).id == self.id:
+        elif AudiolinkFile(self.link_path).id == self.file.id:
             return 'inactive'
 
         return 'conflict'
 
-
-    def create_link(self, dest:str, overwrite:bool = False) -> None:
+    def create_link(self, overwrite:bool = False) -> None:
         """ Creates a hard link in dest path with Audiolink Id as file name.
         """
-        dir = Path(dest)
-        fp = dir.joinpath(self.link_name)
-        link_status = self.get_link_status(dir)
-
-        if link_status is None:
+        if self.link_status is None:
             pass
 
-        elif link_status == 'active':
+        elif self.link_status == 'active':
             return
         
-        elif link_status == 'inactive':
+        elif self.link_status == 'inactive':
             if not overwrite:
                 raise FileExistsError('file exists in dest with link name and id')
 
         else:
             raise FileExistsError('file exists in dest with link name')
 
-        os.link(self.path, fp)
+        os.link(self.file.path, self.link_path)
 
-
-    def delete_id(self) -> None:
-        """ Removes Audiolink Id tag from file.
-        """
-        for style in mediafield.styles(self.__tag.mgfile):
-            style.delete(self.__tag.mgfile)
-        
-        self.__tag.save()
-
-
-    def delete_link(self, dest:str) -> None:
+    def delete_link(self, force:bool = True) -> None:
         """ Removes hard link in dest path if exists with file Audiolink Id.
-            If a file path is given, the file will be checked, if a dir is given, the filename will be the Audiolink Id
         """
-        dir = Path(dest)
-        if not dir.is_dir():
-            raise ValueError('dest must be a dir')
+        if self.link_status is None:
+            return #TODO: Warning no link detected
 
-        fp = Path(dest).joinpath(self.link_name)
+        elif self.link_status == 'active':
+            self.link_path.unlink()
 
-        if fp.exists() and self.get_link_status(dir) == 'active':
-            fp.unlink()
-
-
-    def set_id(self, val:str, overwrite=False) -> None:
-        """ Sets Audiolink Id tag with value.
-        """
-        if not overwrite:
-            if self.id is not None:
-                raise AudiolinkIdExistsError(self.id, self.path)
-
-        if type(val) != AudiolinkId:
-            val = AudiolinkId(val)
-
-        self.__tag.audiolink_id = str(val)
-        self.__tag.save()
+        elif self.link_status == 'inactive':
+            if not force:
+                raise FileExistsError('file exists in dest with link name and id')
+        
+        else:
+            raise FileExistsError('file exists in dest with link name')
 
 
-    def set_new_id(self, overwrite=False) -> None:
-        """ Sets Audiolink Id tag with newly generated id.
-        """
-        self.set_id(AudiolinkId.new(), overwrite=overwrite)
 
 '''
 class AudiolinkFolder:
