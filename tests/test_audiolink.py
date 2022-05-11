@@ -54,9 +54,9 @@ def uuid_hex(val:str) -> str:
 @pytest.fixture
 def media_file(tmp_path:Path):
     def _file(file_state:str, file_type:str) -> Path:
-        fn = file_state + file_type
-        src = resource_path / fn
-        dest = tmp_path / fn
+        fn = f'{file_state}{file_type}'
+        src = resource_path.joinpath(fn)
+        dest = tmp_path.joinpath(fn)
         shutil.copy(src, dest)
         return dest
 
@@ -79,6 +79,11 @@ def media_file_full(media_file):
     return _file
 
 
+@pytest.fixture
+def audiolinkid_valid():
+    return al.AudiolinkId(known_id.get('valid'))
+
+
 # Tests
 def test_version():
     assert al.__version__ == version
@@ -89,60 +94,80 @@ def test_version():
     'val, expected',
     [
         (None, True),
-        (known_id['valid'], True),
-        (known_id['invalid_hex'], False),
-        (known_id['invalid_suffix'], False),
+        (known_id.get('valid'), True),
+        (known_id.get('invalid_hex'), False),
+        (known_id.get('invalid_suffix'), False),
     ]
 )
 def test_AudiolinkId_init(val:str, expected:bool):
     try:
         al.AudiolinkId(val)
-        outcome = True
+        assert True is expected
     except ValueError:
-        outcome = False
-    
-    assert outcome is expected
+        assert False is expected
 
 
 @pytest.mark.parametrize(
     'val, expected',
     [
         (None, True),
-        (known_id['valid'], True),
-        (known_id['invalid_hex'], False),
-        (known_id['invalid_suffix'], False),
+        (known_id.get('valid'), True),
+        (known_id.get('invalid_hex'), False),
+        (known_id.get('invalid_suffix'), False),
     ]
 )
 def test_AudiolinkId_val_setter(val:str, expected:bool):
     try:
-        sample = al.AudiolinkId()
+        sample = al.AudiolinkId(val)
         sample.val = val
-        outcome = True
+        assert True is expected
     except ValueError:
-        outcome = False
-    
-    assert outcome is expected
+        assert False is expected
 
 
 @pytest.mark.parametrize(
     'val',
     [
         None,
-        known_id['valid'],
+        known_id.get('valid'),
     ]
 )
 def test_AudiolinkId_val_getter(val:str):
-    sample = al.AudiolinkId()
-    
-    try:
-        sample.val
-    
-    except AttributeError:
-        assert True
-        return
+    id = al.AudiolinkId(val)
+    assert id.val == val
 
-    assert sample.val == val
 
+# AudiolinkFile
+@pytest.mark.parametrize('file_type', file_types)
+def test_AudiolinkFile_init_file(media_file_empty, file_type):
+    fp = media_file_empty(file_type)
+    file = al.AudiolinkFile(fp)
+    assert file.path == fp
+
+
+@pytest.mark.parametrize('file_type', file_types)
+def test_AudiolinkFile_id_getter(media_file_full, audiolinkid_valid, file_type):
+    fp = media_file_full(file_type)
+    file = al.AudiolinkFile(fp)
+    assert file.id == audiolinkid_valid.val
+
+
+@pytest.mark.parametrize('file_type', file_types)
+def test_AudiolinkFile_id_setter(media_file_empty, audiolinkid_valid, file_type):
+    fp = media_file_empty(file_type)
+    file = al.AudiolinkFile(fp)
+    assert file.id is None
+    file.id = audiolinkid_valid
+    assert file.id == audiolinkid_valid.val
+
+
+@pytest.mark.parametrize('file_type', file_types)
+def test_AudiolinkFile_id_getter(media_file_full, audiolinkid_valid, file_type):
+    fp = media_file_full(file_type)
+    file = al.AudiolinkFile(fp)
+    assert file.id == audiolinkid_valid.val
+    file.delete_audiolink_id_tag()
+    assert file.id is None
 
 '''
 def test_generate_id():

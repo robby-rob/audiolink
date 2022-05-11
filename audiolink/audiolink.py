@@ -67,15 +67,20 @@ class AudiolinkId:
     def __init__(self, val=None) -> None:
         self.val = val
 
+    '''
     def __str__(self) -> str:
         return self.val
 
     def __repr__(self) -> str:
         return self.val
+    '''
 
     @property
     def val(self) -> str:
-        return self.uuid.hex + AudiolinkId.suffix
+        if self.uuid is None:
+            return None
+        
+        return f'{self.uuid.hex}{AudiolinkId.suffix}' 
 
     @val.setter
     def val(self, id:str) -> None:
@@ -133,11 +138,21 @@ class AudiolinkFile:
         return self._tag.audiolink_id
 
     @id.setter
-    def id(self, val:str) -> None:
-        if not isinstance(val, AudiolinkId):
+    def id(self, audiolinkid) -> None:
+        '''
+        if not issubclass(id, AudiolinkId):
             raise ValueError('id is not of class AudiolinkId')
+        '''
+        try:
+            id = audiolinkid.val
 
-        self._tag.audiolink_id = str(val)
+        except AttributeError:
+            raise ValueError('id is not of class AudiolinkId')
+        
+        if id is None:
+            raise ValueError('AudiolinkId has no value')
+
+        self._tag.audiolink_id = str(id)
         self._tag.save()
 
     def delete_audiolink_id_tag(self) -> None:
@@ -182,7 +197,7 @@ class AudiolinkLink:
         
     @property
     def link_name(self) -> str:
-        return self.file.id + self.file.path.suffix
+        return f'{self.file.id}{self.file.path.suffix}'
 
     @property
     def link_path(self) -> Path:
@@ -221,7 +236,7 @@ class AudiolinkLink:
 
         os.link(self.file.path, self.link_path)
 
-    def delete_link(self, force=True) -> None:
+    def delete_link(self, force:bool = True) -> None:
         """ Removes hard link in dest path if exists with file Audiolink Id.
         """
         if self.link_status is None:
@@ -237,12 +252,7 @@ class AudiolinkLink:
         else:
             raise FileExistsError('file exists in dest with link name')
 
-    '''
-    def set_new_id(self, overwrite=False) -> None:
-        """ Sets Audiolink Id tag with newly generated id.
-        """
-        self.set_id(AudiolinkId.new(), overwrite=overwrite)
-    '''
+
 
 '''
 class AudiolinkFolder:
