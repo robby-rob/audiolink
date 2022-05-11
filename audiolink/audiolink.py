@@ -31,7 +31,6 @@ file_types = [
     '.wv',
 ]
 
-al_id_suffix = '-al'
 
 mediafield = MediaField(
     MP3DescStorageStyle(u'AUDIOLINK_ID'),
