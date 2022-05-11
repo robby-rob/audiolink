@@ -148,7 +148,7 @@ class TestAudiolinkFile:
         file.id = audiolinkid_valid
         assert file.id == audiolinkid_valid.val
 
-    def test_AudiolinkFile_id_getter(self, media_file_full, audiolinkid_valid, file_type):
+    def test_AudiolinkFile_delete_id(self, media_file_full, audiolinkid_valid, file_type):
         fp = media_file_full(file_type)
         file = al.AudiolinkFile(fp)
         assert file.id == audiolinkid_valid.val
