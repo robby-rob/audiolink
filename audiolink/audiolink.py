@@ -77,10 +77,10 @@ class AudiolinkId:
 
     @property
     def val(self) -> str:
-        if self.uuid is None:
+        if self._uuid is None:
             return None
         
-        return f'{self.uuid.hex}{AudiolinkId.suffix}' 
+        return f'{self._uuid.hex}{AudiolinkId.suffix}' 
 
     @val.setter
     def val(self, id:str) -> None:
@@ -97,25 +97,21 @@ class AudiolinkId:
 
         self._uuid = uuid.UUID(id[:-n])
 
-    @property
-    def uuid(self):
-        return self._uuid
-
+    '''
     def set_new(self) -> None:
         self._uuid = uuid.uuid4().hex
+    '''
 
     @classmethod
     @property
     def suffix(cls):
         return cls._suffix
 
-    '''
     @classmethod
     def new(cls):
         """ Creates instance with newly generated id
         """
         return AudiolinkId(uuid.uuid4().hex + cls.suffix)
-    '''
 
 class AudiolinkFile:
     """ Class for Audiolink operations on media files.
