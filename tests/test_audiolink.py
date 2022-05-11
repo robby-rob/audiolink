@@ -139,7 +139,7 @@ def test_AudiolinkId_val_getter(val:str):
 
 # AudiolinkFile
 @pytest.mark.parametrize('file_type', file_types)
-def test_AudiolinkFile_init_file(media_file_empty, file_type):
+def test_AudiolinkFile_init(media_file_empty, file_type):
     fp = media_file_empty(file_type)
     file = al.AudiolinkFile(fp)
     assert file.path == fp
@@ -168,6 +168,24 @@ def test_AudiolinkFile_id_getter(media_file_full, audiolinkid_valid, file_type):
     assert file.id == audiolinkid_valid.val
     file.delete_audiolink_id_tag()
     assert file.id is None
+
+
+# AudiolinkFileLink
+@pytest.mark.parametrize('file_type', file_types)
+def test_AudiolinkFile_link_name(media_file_full, file_type, tmp_path:Path):
+    fp = media_file_full(file_type)
+    file = al.AudiolinkFile(fp)
+    link = al.AudiolinkFileLink(file, tmp_path)
+    assert link.link_name == f'{file.id}{file.path.suffix}'
+
+
+@pytest.mark.parametrize('file_type', file_types)
+def test_AudiolinkFile_link_path(media_file_full, file_type, tmp_path:Path):
+    fp = media_file_full(file_type)
+    file = al.AudiolinkFile(fp)
+    link = al.AudiolinkFileLink(file, tmp_path)
+    assert link.link_path == tmp_path.joinpath(f'{file.id}{file.path.suffix}')
+
 
 '''
 def test_generate_id():

@@ -164,7 +164,7 @@ class AudiolinkFile:
         self._tag.save()
 
 
-class AudiolinkLink:
+class AudiolinkFileLink:
     """ Class for Audiolink operations on media files.
     """
     def __init__(self, file:AudiolinkFile, dest:str) -> None:
