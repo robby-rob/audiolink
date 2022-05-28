@@ -1,6 +1,5 @@
 import pytest
 import audiolink.audiolink as al
-import os
 from pathlib import Path
 import shutil
 import uuid
@@ -71,6 +70,20 @@ def audiolinkid_valid():
     return al.AudiolinkId(known_id.get('valid'))
 
 
+@pytest.fixture
+def audiolink_folder_empty(media_file_empty):
+    for ft in file_types:
+        media_file_empty(ft)
+
+@pytest.fixture
+def audiolink_folder(media_file_full, media_file_empty):
+    for ft in file_types:
+        media_file_full(ft)
+        media_file_empty(ft)
+
+    return
+
+
 # Tests
 # General
 def test_version():
@@ -136,29 +149,29 @@ class TestAudiolinkFile:
         file = al.AudiolinkFile(fp)
         assert file.path == fp
 
-    def test_AudiolinkFile_id_getter(self, media_file_full, audiolinkid_valid, file_type):
+    def test_AudiolinkFile_id_getter(self, media_file_full, file_type):
         fp = media_file_full(file_type)
         file = al.AudiolinkFile(fp)
-        assert file.id == audiolinkid_valid.val
+        assert file.id == known_id.get('valid')
 
-    def test_AudiolinkFile_id_setter(self, media_file_empty, audiolinkid_valid, file_type):
+    def test_AudiolinkFile_id_setter(self, media_file_empty, file_type, audiolinkid_valid):
         fp = media_file_empty(file_type)
         file = al.AudiolinkFile(fp)
         assert file.id is None
         file.id = audiolinkid_valid
-        assert file.id == audiolinkid_valid.val
+        assert file.id == known_id.get('valid')
 
-    def test_AudiolinkFile_delete_id(self, media_file_full, audiolinkid_valid, file_type):
+    def test_AudiolinkFile_id_deleter(self, media_file_full, file_type):
         fp = media_file_full(file_type)
         file = al.AudiolinkFile(fp)
-        assert file.id == audiolinkid_valid.val
-        file.delete_audiolink_id_tag()
+        assert file.id == known_id.get('valid')
+        del file.id
         assert file.id is None
 
 
 # AudiolinkFileLink
 @pytest.mark.parametrize('file_type', file_types)
-class TestAudioLinkFileLink:
+class TestAudiolinkFileLink:
     #TODO: file and path setter and getter, link_status, edge cases
 
     def test_AudiolinkFileLink_link_name(self, media_file_full, file_type, tmp_path:Path):
@@ -191,6 +204,64 @@ class TestAudioLinkFileLink:
         assert link_fp.exists()
         link.delete_link()
         assert not link_fp.exists()
+
+
+#AudiolinkFolder
+class TestAudiolinkFolder:
+    def test_AudiolinkFolder_path(self, tmp_path:Path):
+        al_folder = al.AudiolinkFolder()
+        al_folder.path = str(tmp_path)
+        assert al_folder.path == tmp_path
+
+    def test_AudiolinkFolder_link_path(self, tmp_path:Path):
+        al_folder = al.AudiolinkFolder()
+        al_folder.link_path = str(tmp_path)
+        assert al_folder.link_path == tmp_path
+
+    def test_AudiolinkFolder_path_conflict(self, tmp_path:Path):
+        al_folder = al.AudiolinkFolder()
+        al_folder.link_path = str(tmp_path)
+
+        try:
+            al_folder.path = str(tmp_path)
+            assert False
+        except ValueError:
+             assert True
+        
+        try:
+            al_folder.path = str(tmp_path.parent)
+            assert False
+        except ValueError:
+             assert True
+
+    def test_AudiolinkFolder_link_path_conflict(self, tmp_path:Path):
+        al_folder = al.AudiolinkFolder()
+        al_folder.path = str(tmp_path)
+        
+        try:
+            al_folder.link_path = str(tmp_path)
+            assert False
+        except ValueError:
+             assert True
+        
+        try:
+            al_folder.link_path = str(tmp_path.joinpath('subdir'))
+            assert False
+        except ValueError:
+            assert True
+
+    def test_AudiolinkFolder_scan(self, audiolink_folder, tmp_path:Path):
+        #audiolink_folder()
+        pass
+
+    def test_AudiolinkFolder_set_ids(self):
+        pass
+
+    def test_AudiolinkFolder_delete_ids(self):
+        pass
+
+    def test_AudiolinkFolder_create_links(self):
+        pass
 
 '''
 def test_generate_id():
