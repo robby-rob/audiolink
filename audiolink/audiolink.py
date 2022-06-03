@@ -333,7 +333,7 @@ class AudiolinkFolder:
                 
             return output
 
-        files = (fp for fp in self.path.rglob('*') if fp.suffix in set(file_types))
+        files = (fp for fp in self.path.rglob('*') if fp.is_file and fp.suffix in set(file_types))
 
         print('Scanning...')
         self._cache = [analyze(fp) for fp in files]
