@@ -300,7 +300,7 @@ class AudiolinkFolder:
 
         self._link_path = new_path
 
-    def scan(self) -> None:
+    def scan_folder(self) -> None:
         #TODO: look into warning for softlinks if found
 
         al_file = AudiolinkFile()
@@ -333,7 +333,7 @@ class AudiolinkFolder:
                 
             return output
 
-        files = (fp for fp in self.path.rglob('*') if fp.suffix in set(file_types) if fp.is_file)
+        files = (fp for fp in self.path.rglob('*') if fp.suffix in set(file_types))
 
         print('Scanning...')
         self._cache = [analyze(fp) for fp in files]
