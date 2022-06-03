@@ -4,6 +4,7 @@ from mediafile import MP3DescStorageStyle
 from mediafile import MP4StorageStyle
 from mediafile import StorageStyle
 from mediafile import ASFStorageStyle
+from mediafile import UnreadableFileError
 from pathlib import Path
 import uuid
 import os
@@ -253,6 +254,8 @@ class AudiolinkFileLink:
 
 
 class AudiolinkFolder:
+    """ Class for bulk Audiolink operations for files in a folder.
+    """
     def __init__(self, path:str = None, link_path:str = None) -> None:
         self._path = None
         self._link_path = None
@@ -305,9 +308,13 @@ class AudiolinkFolder:
         al_link = AudiolinkFileLink()
 
         def analyze(fp):
-            al_file.path = fp
-            al_id.val = al_file.id
-            
+            try:
+                al_file.path = fp
+                al_id.val = al_file.id
+            except UnreadableFileError as e:
+                print(e)
+                return None
+
             try:
                 id_valid = True if al_id.val is not None else False
             except ValueError:
