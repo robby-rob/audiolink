@@ -300,6 +300,23 @@ class AudiolinkFolder:
 
         self._link_path = new_path
 
+
+    def stats(self) -> None:
+        if not self._cache:
+            print('Run scan() first')
+            return
+
+        count_files = len(self._cache)
+        count_id_missing = len([1 for _ in self._cache if _.get('id') is None])
+        count_id_valid = len([1 for _ in self._cache if _.get('id_valid')])
+        count_id_not_valid = len([1 for _ in self._cache if _.get('id') is not None and not _.get('id_valid')])
+        
+        print(f'  Files........ {count_files} \n'
+            + f'  Id Valid:.... {count_id_valid} \n'
+            + f'  Id Invalid... {count_id_not_valid} \n'
+            + f'  Id Missing... {count_id_missing}'
+        )
+
     def scan_folder(self) -> None:
         #TODO: look into warning for softlinks if found
 
@@ -337,18 +354,8 @@ class AudiolinkFolder:
 
         print('Scanning...')
         self._cache = [analyze(fp) for fp in files]
-        
-        count_files = len(self._cache)
-        count_id_missing = len([1 for _ in self._cache if _.get('id') is None])
-        count_id_valid = len([1 for _ in self._cache if _.get('id_valid')])
-        count_id_not_valid = len([1 for _ in self._cache if _.get('id') is not None and not _.get('id_valid')])
-        
-        print(f'Scan Results: \n'
-            + f'  Files........ {count_files} \n'
-            + f'  Id Valid:.... {count_id_valid} \n'
-            + f'  Id Invalid... {count_id_not_valid} \n'
-            + f'  Id Missing... {count_id_missing}'
-        )
+        print('Scan Results:')
+        self.stats()
 
     def scan_links(self):
         pass
@@ -367,11 +374,16 @@ class AudiolinkFolder:
             
             return False
 
+        print(f'Setting ids for files with id status {status}...')
+
         for i, elem in enumerate(self._cache):
             if operate_on_file(elem):
                 al_file.path = elem.get('path')
                 al_file.id = AudiolinkId.new()
                 self._cache[i]['id'] = al_file.id
+
+        print(f'Set ids complete:')
+        self.stats()
 
 
     def delete_ids(self) -> None:
@@ -381,11 +393,15 @@ class AudiolinkFolder:
 
         al_file = AudiolinkFile()
 
+        print(f'Deleting ids...')
+
         for i, elem in enumerate(self._cache):
             al_file.path = elem.get('path')
             del al_file.id
             self._cache[i]['id'] = None
 
+        print(f'Delete ids complete:')
+        self.stats()
 
     def update_links(self):
         if self.link_path is None:
