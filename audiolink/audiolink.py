@@ -300,7 +300,7 @@ class AudiolinkFolder:
 
         self._link_path = new_path
 
-    def scan_folder(self) -> None:
+    def scan(self) -> None:
         #TODO: look into warning for softlinks if found
 
         al_file = AudiolinkFile()
